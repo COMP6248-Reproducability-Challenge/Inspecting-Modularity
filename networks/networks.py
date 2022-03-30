@@ -3,7 +3,7 @@ import torch.nn as nn
 from typing import List
 
 class FNN(nn.Module):
-    def __init__(self, layer_dims:List[int], lr:float=0.02):
+    def __init__(self, layer_dims:List[int], dir, lr:float=0.02):
         super().__init__()
         num_layers = len(layer_dims) # number of layers (including input and output layers)
 
@@ -23,6 +23,9 @@ class FNN(nn.Module):
         print(f'... FNN Network training on {self.device} ...')
         self.to(self.device)
 
+        print(dir)
+        self.save_file = dir
+
     def forward(self, input: T.Tensor) -> T.Tensor:
         for layer in self.layers:
             input = layer(input)
@@ -33,3 +36,11 @@ class FNN(nn.Module):
             input = layer(input)
         input = self.sig(input)
         return input
+
+    def save_(self):
+        print('Saving network ...')
+        T.save(self.state_dict(), self.save_file)
+
+    def load_save(self):  # file
+        print('Load saves ...')
+        self.load_state_dict(T.load(self.save_file))
