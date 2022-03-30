@@ -23,7 +23,7 @@ class FNN(nn.Module):
         print(f'... FNN Network training on {self.device} ...')
         self.to(self.device)
 
-        print(dir)
+        print(f'Accessing : {dir}')
         self.save_file = dir
 
     def forward(self, input: T.Tensor) -> T.Tensor:

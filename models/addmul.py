@@ -87,14 +87,12 @@ class HandleAddMul():
         with T.no_grad():
 
             inp = [[b[0].item(), b[1].item()] for b in batch]
-            inp_int = [int(b[0].item() + b[1].item()) for b in batch]
 
-            otp = [b[2].item() for b in batch]
+            otp = [int(b[2].item()) for b in batch]
             ops = [b[3].item() for b in batch]
             inp, otp__ = self.set_batched_digits(inp, otp, ops)
 
             inp_ = T.Tensor(np.array(inp)).to(self.network.device)
-            otp_ = T.Tensor(np.array(otp)).to(self.network.device)
 
             otp_pred = self.network.forward(inp_)
             pred = []
@@ -107,8 +105,8 @@ class HandleAddMul():
                     pred.append(100)
 
             correct = 0
-            for i in range(len(inp_int)):
-                if inp_int[i] == pred[i]:
+            for i in range(len(otp)):
+                if otp[i] == pred[i]:
                     correct += 1
-            acc = correct/len(inp_int)
+            acc = correct/len(otp)
             return acc
