@@ -50,5 +50,5 @@ class TwoDigitDatasetGenerator:
 
 c = TwoDigitDatasetGenerator()
 
-c.generate_mul_set()
+# c.generate_mul_set()
 c.generate_add_set()
