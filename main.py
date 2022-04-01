@@ -8,11 +8,14 @@ testing_split = 1 - training_split
 
 network_cache_dir = "networks/cache-networks/"
 netwrok_name = "lyr256-split0.8-lr0.01-mul.data"
-checkpoint = True # shall we load network or create new one
-test_flag = True # are we trianing or shall we go straight to testing?
-layer_dims = [42,256,256,20]
-batchsize = 64
-num_epochs = 50
+
+checkpoint = False # shall we load network or create new one
+test_flag = False # are we trianing or shall we go straight to testing?
+
+input_dims = [42]
+output_dims = [20]
+batchsize = 128
+num_epochs = 20000
 
 # For running the add data
 data_fp = "generate_datasets/tmp/digit-data/simple_mul.npy"
@@ -23,7 +26,7 @@ train_split_idx = int(data_len * training_split)
 train_data = data[:train_split_idx]
 test_data = data[train_split_idx:]
 
-admu = HandleAddMul(layer_dims, dir=network_cache_dir+netwrok_name, checkpoint=checkpoint, lr=0.001)
+admu = HandleAddMul(input_dims, output_dims, dir=network_cache_dir+netwrok_name, checkpoint=checkpoint, lr=0.001)
 
 train_loader = T.utils.data.DataLoader(dataset=T.tensor(train_data),batch_size=batchsize,
                                           shuffle=True)

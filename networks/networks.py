@@ -1,24 +1,47 @@
+"""Reproduction of the FNN as described in Appendix C.4
+
+    FNN : 20k steps
+          5 layers deep
+            2000 units in reach layers
+          ReLU between each layer
+          Adam optimiser
+          lr = 0.001
+          gradient clipping = 1
+
+    Notes : Default 5 layers 2000 units is considered 'big' (Figure 14)
+            If we want to test other sizes (to reproduce decreased in shared % of nodes as size increases)
+
+"""
+
 import torch as T
 import torch.nn as nn
-from typing import List
 
 class FNN(nn.Module):
-    def __init__(self, layer_dims:List[int], dir, lr:float=0.02):
+    def __init__(self, input_dims, output_dims, dir, lr:float=0.001):
         super().__init__()
-        num_layers = len(layer_dims) # number of layers (including input and output layers)
 
         self.layers = nn.ModuleList([
             nn.Sequential(
-                nn.Linear(layer_dims[i], layer_dims[i+1]),
-                nn.ReLU()
-            ) if i != (num_layers-2)
-            else nn.Linear(layer_dims[i], layer_dims[i+1])
-            for i in range(num_layers-1)
+                nn.Linear(*input_dims, 2000), # Input Layer
+                nn.ReLU(),
+                nn.Linear(2000, 2000), # L1
+                nn.ReLU(),
+                nn.Linear(2000, 2000), # L2
+                nn.ReLU(),
+                nn.Linear(2000, 2000), # L3
+                nn.ReLU(),
+                nn.Linear(2000, 2000), # L4
+                nn.ReLU(),
+                nn.Linear(2000, 2000), #L5
+                nn.ReLU(),
+                nn.Linear(2000, *output_dims) # Output Layer
+            )
         ])
+
+        self.optimiser = T.optim.Adam(self.parameters(), lr=lr) # Adam optimiser
+        self.loss = nn.MSELoss()
         self.sig = nn.Sigmoid()
 
-        self.optimiser = T.optim.Adam(self.parameters(), lr=lr)
-        self.loss = nn.MSELoss()
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         print(f'... FNN Network training on {self.device} ...')
         self.to(self.device)

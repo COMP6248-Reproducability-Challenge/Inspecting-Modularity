@@ -6,12 +6,12 @@ from networks.networks import FNN
 
 class HandleAddMul():
 
-    def __init__(self, layer_dims: list, lr=0.01, dir='', checkpoint=False):
+    def __init__(self, input_layer:list, output_layer:list, lr=0.01, dir='', checkpoint=False):
         self.inp = []
         self.otp = []
 
         self.step_cntr = 0
-        self.network = FNN(layer_dims,lr=lr, dir=dir)
+        self.network = FNN(input_layer, output_layer, lr=lr, dir=dir)
 
         if checkpoint == True:
             print(dir)
@@ -110,3 +110,13 @@ class HandleAddMul():
                     correct += 1
             acc = correct/len(otp)
             return acc
+
+    def train_mask(self):
+        """Method for Mask training (Section 2)
+
+        Notes
+        -----
+            We take learned logits (initialised probabilities of node being chose as 0.9) `l_i` (i for index of each
+            node).
+        """
+
