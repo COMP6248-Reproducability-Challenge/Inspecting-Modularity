@@ -9,13 +9,13 @@ testing_split = 1 - training_split
 network_cache_dir = "networks/cache-networks/"
 netwrok_name = "lyr256-split0.8-lr0.01-mul.data"
 
-checkpoint = False # shall we load network or create new one
+checkpoint = True # shall we load network or create new one
 test_flag = False # are we trianing or shall we go straight to testing?
 
 input_dims = [42]
 output_dims = [20]
 batchsize = 128
-num_epochs = 20000
+num_epochs = 1
 
 # For running the add data
 data_fp = "generate_datasets/tmp/digit-data/simple_mul.npy"
@@ -44,6 +44,7 @@ if not test_flag:
         if e % 20 == 0 and e > 20:
             admu.network.save_()
 
+    admu.train_mask()
 acc = 0.0
 steps = 0
 for idx, batch in enumerate(test_loader):

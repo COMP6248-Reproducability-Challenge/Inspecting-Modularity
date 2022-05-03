@@ -119,4 +119,14 @@ class HandleAddMul():
             We take learned logits (initialised probabilities of node being chose as 0.9) `l_i` (i for index of each
             node).
         """
+        # Freeze layers
+        for child in self.network.children():
+            for param in child.parameters():
+                param.requires_grad = False
+
+        for param in self.network.parameters():
+            print(param.data)
+
+
+        # mask given by the GS
 
