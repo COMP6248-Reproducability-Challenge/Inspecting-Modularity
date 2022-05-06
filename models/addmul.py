@@ -2,6 +2,7 @@ import torch as T
 import torch.nn.functional as F
 import numpy as np
 
+from mask import MaskBase
 from networks.networks import FNN
 
 class HandleAddMul():
@@ -111,7 +112,7 @@ class HandleAddMul():
             acc = correct/len(otp)
             return acc
 
-    def train_mask(self):
+    def init_mask(self, batch):
         """Method for Mask training (Section 2)
 
         Notes
@@ -120,13 +121,40 @@ class HandleAddMul():
             node).
         """
         # Freeze layers
-        for child in self.network.children():
-            for param in child.parameters():
+        # msk = MaskBase(self.network)
+        with T.no_grad():
+            for param in self.network.parameters():
                 param.requires_grad = False
 
-        for param in self.network.parameters():
-            print(param.data)
+            inp = [[b[0].item(), b[1].item()] for b in batch]
 
+            otp = [int(b[2].item()) for b in batch]
+            ops = [b[3].item() for b in batch]
+            inp, otp__ = self.set_batched_digits(inp, otp, ops)
 
-        # mask given by the GS
+            inp_ = T.Tensor(np.array(inp)).to(self.network.device)
+
+            otp_pred, mask = self.network.forward_init_mask(inp_)
+
+            return mask
+
+    def learn_mask(self, batch, masks):
+        self.network.optimiser.zero_grad()
+        with T.no_grad():
+            inp = [[b[0].item(), b[1].item()] for b in batch]
+            otp = [b[2].item() for b in batch]
+            ops = [b[3].item() for b in batch]
+            inp, otp = self.set_batched_digits(inp, otp, ops)
+
+            inp_ = T.Tensor(np.array(inp)).to(self.network.device)
+            otp_ = T.Tensor(np.array(otp)).to(self.network.device)
+
+            otp_pred = self.network.forward_mask(inp_)
+
+            loss = self.network.loss(otp_, otp_pred).to(self.network.device)
+
+            loss.backward()
+            self.network.optimiser.step()
+
+            return loss.item()
 
