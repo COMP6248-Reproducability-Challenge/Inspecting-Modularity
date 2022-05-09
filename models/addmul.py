@@ -2,7 +2,6 @@ import torch as T
 import torch.nn.functional as F
 import numpy as np
 
-from mask import MaskBase
 from networks.networks import FNN
 
 class HandleAddMul():
@@ -64,96 +63,19 @@ class HandleAddMul():
         return T.stack(reformat_inp), T.stack(outputs_)
 
     def learn(self, batch):
+        # Split data into respective representations
+        inp = [[b[0], b[1]] for b in batch]
+        otp = [b[2] for b in batch]
+        ops = [b[3] for b in batch]
+        # Encode for one-hot vectors
+        inp_, otp_ = self.set_batched_digits(inp, otp, ops)
+        inp_ = inp_.to(self.network.device) # pass into GPU if avaliable
+        otp_target = otp_.to(self.network.device)
+
+        otp_pred = self.network(inp_)
+
         self.network.optimiser.zero_grad()
-
-        inp = [[b[0].item(), b[1].item()] for b in batch]
-        otp = [b[2].item() for b in batch]
-        ops = [b[3].item() for b in batch]
-        inp, otp = self.set_batched_digits(inp, otp, ops)
-
-        inp_ = T.Tensor(np.array(inp)).to(self.network.device)
-        otp_ = T.Tensor(np.array(otp)).to(self.network.device)
-
-        otp_pred = self.network.forward(inp_)
-
-        loss = self.network.loss(otp_, otp_pred).to(self.network.device)
-
+        loss = self.network.loss(otp_pred, otp_target).to(self.network.device)
         loss.backward()
         self.network.optimiser.step()
-
         return loss.item()
-
-    def steps(self, batch):
-        with T.no_grad():
-
-            inp = [[b[0], b[1]] for b in batch]
-
-            otp = [b[2] for b in batch]
-            ops = [b[3] for b in batch]
-            inp, otp__ = self.set_batched_digits(inp, otp, ops)
-
-            inp_ = T.Tensor(np.array(inp)).to(self.network.device)
-
-            otp_pred = self.network.forward(inp_)
-            pred = []
-            for o in otp_pred:
-                x = [i%10 for i, t in enumerate(o) if t > 0.7]
-                if len(x) == 2: # so if we determine a 2 digit number
-                    val_ = x[0]*10 +x[1]
-                    pred.append(val_)
-                else:
-                    pred.append(100)
-
-            correct = 0
-            for i in range(len(otp)):
-                if otp[i] == pred[i]:
-                    correct += 1
-            acc = correct/len(otp)
-            return acc
-
-    def init_mask(self, batch):
-        """Method for Mask training (Section 2)
-
-        Notes
-        -----
-            We take learned logits (initialised probabilities of node being chose as 0.9) `l_i` (i for index of each
-            node).
-        """
-        # Freeze layers
-        # msk = MaskBase(self.network)
-        with T.no_grad():
-            for param in self.network.parameters():
-                param.requires_grad = False
-
-            inp = [[b[0].item(), b[1].item()] for b in batch]
-
-            otp = [int(b[2].item()) for b in batch]
-            ops = [b[3].item() for b in batch]
-            inp, otp__ = self.set_batched_digits(inp, otp, ops)
-
-            inp_ = T.Tensor(np.array(inp)).to(self.network.device)
-
-            otp_pred, mask = self.network.forward_init_mask(inp_)
-
-            return mask
-
-    def learn_mask(self, batch, masks):
-        self.network.optimiser.zero_grad()
-        with T.no_grad():
-            inp = [[b[0].item(), b[1].item()] for b in batch]
-            otp = [b[2].item() for b in batch]
-            ops = [b[3].item() for b in batch]
-            inp, otp = self.set_batched_digits(inp, otp, ops)
-
-            inp_ = T.Tensor(np.array(inp)).to(self.network.device)
-            otp_ = T.Tensor(np.array(otp)).to(self.network.device)
-
-            otp_pred = self.network.forward_mask(inp_)
-
-            loss = self.network.loss(otp_, otp_pred).to(self.network.device)
-
-            loss.backward()
-            self.network.optimiser.step()
-
-            return loss.item()
-
