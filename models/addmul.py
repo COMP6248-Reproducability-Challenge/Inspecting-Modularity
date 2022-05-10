@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import numpy as np
 
 import networks
-from networks import FNN
+from networks.networks import FNN
 
 class HandleAddMul():
 

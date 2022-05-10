@@ -24,8 +24,11 @@ data_fp = ["generate_datasets/tmp/digit-data/simple_mul.npy",
            "generate_datasets/tmp/digit-data/simple_add.npy"]
 data_mul = np.load(data_fp[0], allow_pickle=True)
 data_add = np.load(data_fp[1], allow_pickle=True)
-np.random.shuffle(data_add)
-data_add = data_add[:len(data_mul)]
+
+mul_factor = int(len(data_add)/len(data_mul)) + 1
+data_mul = np.concatenate([data_mul for i in range(mul_factor)])
+np.random.shuffle(data_mul)
+data_mul = data_mul[:len(data_add)]
 assert len(data_mul) == len(data_add)
 
 data = np.concatenate([data_add,  data_mul])
