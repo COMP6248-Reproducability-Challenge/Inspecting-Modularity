@@ -7,12 +7,12 @@ from networks.networks import FNN
 
 class HandleAddMul():
 
-    def __init__(self, input_layer:list, output_layer:list, lr=0.01, dir='', checkpoint=False):
+    def __init__(self, input_layer:list, output_layer:list, lr=0.01, dir='', checkpoint=False, use_optimiser:bool=True):
         self.inp = []
         self.otp = []
 
         self.step_cntr = 0
-        self.network = FNN(input_layer, output_layer, lr=lr, dir=dir)
+        self.network = FNN(input_layer, output_layer, lr=lr, dir=dir, use_optimiser=use_optimiser)
 
         if checkpoint == True:
             print(dir)
@@ -82,5 +82,6 @@ class HandleAddMul():
         return loss.item()
 
     def refreeze_weights(self):
-        for name, param in self.network.named_parameters():
-            param.requires_grad_(requires_grad=False)
+        for layer in self.network.layers[0]:
+            if isinstance(layer, T.nn.Linear):
+                layer.weight.requires_grad_(requires_grad=False)
