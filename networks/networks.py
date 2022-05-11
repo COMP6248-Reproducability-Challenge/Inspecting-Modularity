@@ -15,9 +15,10 @@
 import torch
 import torch as T
 import torch.nn as nn
+import torch.nn.functional as F
 
 class FNN(nn.Module):
-    def __init__(self, input_dims, output_dims, dir, lr:float=0.001):
+    def __init__(self, input_dims, output_dims, dir, lr:float=0.001, use_optimiser:bool=True):
         super(FNN, self).__init__()
 
         self.layers = nn.ModuleList([nn.Sequential(
@@ -36,10 +37,9 @@ class FNN(nn.Module):
                 nn.Linear(2000, *output_dims) # Output Layer
             )])
 
-
-        self.optimiser = T.optim.Adam(self.parameters(), lr=lr) # Adam optimiser
-        self.loss = nn.CrossEntropyLoss()
-        self.sig = nn.Sigmoid()
+        if use_optimiser:
+            self.optimiser = T.optim.Adam(self.parameters(), lr=lr) # Adam optimiser
+            self.loss = nn.CrossEntropyLoss()
 
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         print(f'... FNN Network training on {self.device} ...')
@@ -50,7 +50,6 @@ class FNN(nn.Module):
 
     def forward(self, input: T.Tensor) -> T.Tensor:
         for layer in self.layers:
-            # print(layer._get_name())
             input = layer(input)
         return input
 
@@ -59,5 +58,8 @@ class FNN(nn.Module):
         T.save(self.state_dict(), self.save_file)
 
     def load_save(self):  # file
-        print('Load saves ...')
         self.load_state_dict(T.load(self.save_file))
+
+    def forward_mask_layer(self, x, mask, weight, bias):
+        weight = weight * mask
+        return F.linear(x, weight, bias)
