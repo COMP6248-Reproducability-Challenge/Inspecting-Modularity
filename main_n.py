@@ -108,7 +108,7 @@ for e in range(NUM_EPOCHS):
 
         otp_pred = handler.network(inp_)
 
-        pred = torch.stack((otp_pred[:,0:10], otp_pred[:,10:]))
+        pred = torch.stack((otp_pred[:,0:1á0], otp_pred[:,10:]))
         pred = torch.argmax(pred, dim=2)
         pred[0,:] = pred[0,:]*10
         pred = torch.sum(pred, dim=0).to(handler.network.device)
