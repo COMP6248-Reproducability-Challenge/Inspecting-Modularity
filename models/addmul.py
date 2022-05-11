@@ -80,3 +80,7 @@ class HandleAddMul():
         loss.backward()
         self.network.optimiser.step()
         return loss.item()
+
+    def refreeze_weights(self):
+        for name, param in self.network.named_parameters():
+            param.requires_grad_(requires_grad=False)
