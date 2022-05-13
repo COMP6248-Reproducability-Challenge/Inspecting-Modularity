@@ -41,7 +41,7 @@ class TwoDigitDatasetGenerator:
             for i in range(self.modulo):
                 for j in range(self.modulo):
                     if i * j < self.modulo:  # check for two digit output
-                        arr.append([i, j, i * j, 0])
+                        arr.append([i, j, i * j, 1])
             arr_ = np.array(arr)
             np.save(self.file_path + name, arr_)
 
@@ -50,5 +50,5 @@ class TwoDigitDatasetGenerator:
 
 c = TwoDigitDatasetGenerator()
 
-# c.generate_mul_set()
+c.generate_mul_set()
 c.generate_add_set()
