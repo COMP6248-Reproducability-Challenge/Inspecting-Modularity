@@ -1,5 +1,4 @@
 """Reproduction of the FNN as described in Appendix C.4
-
     FNN : 20k steps
           5 layers deep
             2000 units in reach layers
@@ -10,7 +9,6 @@
 
     Notes : Default 5 layers 2000 units is considered 'big' (Figure 14)
             If we want to test other sizes (to reproduce decreased in shared % of nodes as size increases)
-
 """
 import torch
 import torch as T
@@ -57,7 +55,7 @@ class FNN(nn.Module):
         print('Saving network ...')
         T.save(self.state_dict(), self.save_file)
 
-    def load_save(self):  # file
+    def load_save(self):
         self.load_state_dict(T.load(self.save_file))
 
     def forward_mask_layer(self, x, mask, weight, bias):
